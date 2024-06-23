@@ -3,8 +3,9 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 # coding: utf8
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-from telebot import types
+from telegram import Update
+
+from User import add_user_to_db
 from config import *
 from parser import *
 import re
@@ -20,26 +21,42 @@ import json
 
 bot = telebot.TeleBot(TOKEN)
 
-# Словарь соответствия между текстом сообщения и знаками зодиака
+savedFltr = types.InlineKeyboardButton("Сохранёные поиски 💾 ", callback_data='createFltrSrch')
+configNtfc = types.InlineKeyboardButton("Настройки уведомлений", callback_data='configNtfc')
+returnToMain = types.InlineKeyboardButton("Вернуться в меню 📃", callback_data='returnToMain')
+returnBack = types.InlineKeyboardButton("Назад 🔙", callback_data='returnBack')
+#savedFltr = types.InlineKeyboardButton("Сохранёные поиски 💾 ", callback_data='createFltrSrch')
+
+
+# Словарь соответствия ме жду текстом сообщения и знаками зодиака
 
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+    add_user_to_db(message)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markupAllow = types.InlineKeyboardMarkup()
+    markupInline = types.InlineKeyboardMarkup(row_width=1)
     btn1 = types.KeyboardButton("🔍 Поиск тендеров")
     btn2 = types.KeyboardButton("🚀Больше возможностей")
     btn3 = types.KeyboardButton("👨‍💻 Обратная связь")
     btn4 = types.KeyboardButton("📚 Помощь")
 
-    markupAllow = types.InlineKeyboardMarkup()
     button1 = types.InlineKeyboardButton("Начать поиск ✅", callback_data='startfinder', message=message)
+    configNtfc = types.InlineKeyboardButton("Настройки уведомлений", callback_data='configNtfc')
     button2 = types.InlineKeyboardButton("Вернуться в меню", callback_data='returntomain')
-
     markupAllow.add(button1, button2)
-
     markup.add( btn3,btn1,btn2, btn4)
-    bot.send_message(message.chat.id, text="Привет, {0.first_name}! Я тестовый бот для поиска тендеров", reply_markup=markup)
-    bot.send_message(message.from_user.id, text="Для начала выбери нужное меню:")
+    createFltrSrch = types.InlineKeyboardButton("Создание фильтра поиска 🔍 ", callback_data='createFltrSrch')
+    markupInline.add(createFltrSrch,savedFltr,configNtfc)
+
+
+    bot.send_message(message.chat.id, text="Привет! Я тестовый бот для поиска тендеров, скоро здесь появится инструкция для использования", reply_markup=markup)
+
+    bot.send_message(message.from_user.id, text="Выбери нужное меню для поиска:",reply_markup=markupInline)
+
+@bot.message_handler(commands=['🔍 Поиск тендеров'])
+
 
 
 @bot.message_handler(content_types=['text'])
@@ -51,8 +68,8 @@ def func(message):
 
 
     if (message.text == "🔍 Поиск тендеров"):
-        bot.send_message(message.chat.id, text="Введите ключевое слово:")
-        bot.register_next_step_handler(message, outputList)
+        #bot.register_next_step_handler(message, outputList)
+        print()
     elif (message.text == "❓ Задать вопрос"):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn1 = types.KeyboardButton("🚀Больше возможностей")
@@ -82,22 +99,22 @@ def func(message):
     else:
         bot.send_message(message.chat.id, text="На такую комманду я не запрограммирован, выберите нужное меню")
 
-def outputList(message):
+def create(message):
     bot.send_message(message.chat.id, "Подтвердите поиск")
     markupAllow = types.InlineKeyboardMarkup()
 
     finderCallback_str = str('startfinder') + '|' + message.text
 
-    button1 = types.InlineKeyboardButton("Начать поиск ✅", callback_data=finderCallback_str)
-    button2 = types.InlineKeyboardButton("Вернуться в меню", callback_data='returntomain')
-    markupAllow.add(button1, button2)
+    # markupAllow.add(createFltrSrch)
+    # markupAllow.add(savedFltr)
+    # markupAllow.add(configNtfc)
+    # markupAllow.add(returnToMain)
+
     bot.send_message(message.chat.id, text="Начать поиск тендеров с ключевым словом: \n \n"+message.text+" ? \n \n нажмите Да или Нет", reply_markup=markupAllow)
 
     print("Сообщение")
     #print(message)
     #print(parseEis(message))
-
-
 
 def check_answers(msg):
     print('start check ansewr')
@@ -115,7 +132,6 @@ def check_answers(msg):
         return errorWithBot
 
 
-
 # def check_answers(message):
 #     #print(message.text)
 #     if message.text == "Начать поиск ✅":
@@ -131,6 +147,30 @@ def check_answers(msg):
 #         except:
 #             bot.send_message(message.chat.id, text="Ошибка")
 
+@bot.callback_query_handler(func=lambda call: re.search('createFltrSrch', call.data))  # Ловим коллбэк от кнопки. Нам передается объект CallbackQuery который содержит поле data и message. Сейчас нам нужно из даты достать наше слово которое мы передали в атрибуте callback_data
+def create_finder(callback_query: types.CallbackQuery):
+    print(callback_query.data)
+    markupMenuCreateFltr = types.InlineKeyboardMarkup(row_width=1)
+    inputKeyFind = types.InlineKeyboardButton("Ввести ключевое слово для поиска 🔍 ", callback_data='inputKeyFind')
+    inputRegion = types.InlineKeyboardButton("Выберете регион 🗺️ ", callback_data='inputRegion')
+    inputPrice = types.InlineKeyboardButton("Выберете цену ₽ ", callback_data='inputPrice')
+    markupMenuCreateFltr.add(inputKeyFind,inputRegion,inputPrice)
+    bot.send_message(callback_query.message.chat.id,text="Заполните данные фильтра",reply_markup=markupMenuCreateFltr)
+    print("Зашли в кнопку квери")
+
+@bot.callback_query_handler(func=lambda call: re.search('inputKeyFind', call.data))# Ловим коллбэк от кнопки. Нам передается объект CallbackQuery который содержит поле data и message. Сейчас нам нужно из даты достать наше слово которое мы передали в атрибуте callback_data
+def create_finder(callback_query: types.CallbackQuery):
+    print((callback_query.data))
+    markupInputValueKey = types.InlineKeyboardMarkup(row_width=1)
+    InputValueKey = types.InlineKeyboardButton("Введите наименование закупки", callback_data='InputValueKey')
+    markupInputValueKey.add(InputValueKey)
+    bot.send_message(callback_query.message.chat.id, text="Введите ключевое поле ", reply_markup=markupInputValueKey)
+
+@bot.callback_query_handler(func=lambda call: re.search('InputValueKey', call.data))# Ловим коллбэк от кнопки. Нам передается объект CallbackQuery который содержит поле data и message. Сейчас нам нужно из даты достать наше слово которое мы передали в атрибуте callback_data
+def create_finder(callback_query: types.CallbackQuery):
+    #print(callback_query.message.text)
+    inputkey = bot.send_message(callback_query.message.chat.id,'Введите ключевое слово')
+    #bot.register_next_step_handler(inputkey, outputList)
 
 @bot.callback_query_handler(func=lambda c: re.search('startfinder',c.data))#Ловим коллбэк от кнопки. Нам передается объект CallbackQuery который содержит поле data и message. Сейчас нам нужно из даты достать наше слово которое мы передали в атрибуте callback_data
 def callback_answer(callback_query: types.CallbackQuery): #И отвечаем на него
