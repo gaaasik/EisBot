@@ -3,21 +3,15 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 # coding: utf8
-from telegram import Update
 
-from User import add_user_to_db
-from config import *
-from parser import *
+from python.config import *
+from python.parsing import *
 import re
 
 #from db import * если будем использовать базу данных
 
 from telebot import types # для указание типов
 import telebot
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from LxmlSoup import LxmlSoup
-import requests
-import json
 
 bot = telebot.TeleBot(TOKEN)
 

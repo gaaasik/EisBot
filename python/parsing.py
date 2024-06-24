@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 import requests
 def parseEis(msg):
 	clearList = [[0] * 3 for i in range(10)]
-	print(clearList)
+	print("УУУУУУУУУУУУУУУУУСССССССПППППППППППЕЕЕЕЕЕЕЕЕЕЕЕХХХХХХХ")
 	listTender = [{'name':'Название закупки','href' : 'ссылка','cost': 21,'number': '03902934'}]
 	url = "https://zakupki.gov.ru/epz/order/extendedsearch/results.html?searchString="+ msg
 	url = "https://zakupki.gov.ru/epz/order/extendedsearch/results.html?searchString=mobi"
