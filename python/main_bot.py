@@ -1,4 +1,6 @@
+print("version1")
 import logging
+
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.types import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
@@ -18,7 +20,9 @@ dp.middleware.setup(LoggingMiddleware())
 
 # FSM для управления состояниями
 class SearchStates(StatesGroup):
-    waiting_for_keyword = State()
+    waiting_for_keyword = State(
+
+    )
 
 
 # Список для хранения ключевых слов
@@ -34,14 +38,8 @@ reply_keyboard.add(KeyboardButton("Помощь"), KeyboardButton("Обратн�
 
 # Приветственное сообщение с кнопкой "Начать поиск" и reply-кнопками
 @dp.message_handler(commands=['start'])
-async def send_welcome(message: types.message):
-    keyboard = [['Отправить номер телефона', {'request_contact': True}]]
-    reply_markup = {'keyboard': keyboard, 'one_time_keyboard': True, 'resize_keyboard': True}
-    message.reply_text('Подтвердите свой номер телефона:', reply_markup=reply_markup)
-
-
-
-    database.add_user(message.from_user.id, message.from_user.username, message.from_user.phone_number, 0)
+async def send_welcome(message: types.Message):
+    database.add_user(message.from_user.id, message.from_user.username,0 ,0)
 
     await message.answer(
         "Приветствую тебя! Знаешь ли ты, что на госзакупках можно найти самые необычные товары и услуги? Например, однажды был тендер на поставку папок для дарения. Давай начнем наш путь к успеху!",
@@ -70,7 +68,6 @@ def get_search_filters_keyboard(user_id):
     return keyboard
 
 
-
 # Обработчик для кнопок "Начать поиск" и "Добавить поиск"
 @dp.callback_query_handler(Text(equals=['start_search', 'add_search']))
 async def start_search(callback_query: types.CallbackQuery):
@@ -82,14 +79,17 @@ async def start_search(callback_query: types.CallbackQuery):
 # Обработчики для кнопок фильтров поиска
 @dp.callback_query_handler(Text(equals='add_keyword'))
 async def add_keyword(callback_query: types.CallbackQuery):
+    print('пытаемся добавить 0 1rk.x gjkt ')
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, "Введите ключевое слово для поиска:",
                            reply_markup=reply_keyboard)
+    print('пытаемся добавить 1rk.x gjkt ')
     await SearchStates.waiting_for_keyword.set()
 
 
 @dp.message_handler(state=SearchStates.waiting_for_keyword)
 async def receive_keyword(message: types.Message, state: FSMContext):
+    print('пытаемся добавить rk.x gjkt ')
     user_id = message.from_user.id
     keyword = message.text
 
@@ -114,6 +114,7 @@ async def select_region(callback_query: types.CallbackQuery):
 async def select_price(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, "Введите диапазон цен для поиска:", reply_markup=reply_keyboard)
+
 
 @dp.callback_query_handler(Text(equals='save_and_search'))
 async def save_and_search(callback_query: types.CallbackQuery):
