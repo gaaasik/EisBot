@@ -1,4 +1,5 @@
 print("версия 0.0")
+
 import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
