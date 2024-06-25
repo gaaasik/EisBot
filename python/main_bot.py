@@ -34,7 +34,13 @@ reply_keyboard.add(KeyboardButton("Помощь"), KeyboardButton("Обратн�
 
 # Приветственное сообщение с кнопкой "Начать поиск" и reply-кнопками
 @dp.message_handler(commands=['start'])
-async def send_welcome(message: types.Message):
+async def send_welcome(message: types.message):
+    keyboard = [['Отправить номер телефона', {'request_contact': True}]]
+    reply_markup = {'keyboard': keyboard, 'one_time_keyboard': True, 'resize_keyboard': True}
+    message.reply_text('Подтвердите свой номер телефона:', reply_markup=reply_markup)
+
+
+
     database.add_user(message.from_user.id, message.from_user.username, message.from_user.phone_number, 0)
 
     await message.answer(
@@ -62,6 +68,7 @@ def get_search_filters_keyboard(user_id):
         InlineKeyboardButton("Сохранить и начать поиск", callback_data='save_and_search')
     )
     return keyboard
+
 
 
 # Обработчик для кнопок "Начать поиск" и "Добавить поиск"
@@ -107,7 +114,6 @@ async def select_region(callback_query: types.CallbackQuery):
 async def select_price(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, "Введите диапазон цен для поиска:", reply_markup=reply_keyboard)
-
 
 @dp.callback_query_handler(Text(equals='save_and_search'))
 async def save_and_search(callback_query: types.CallbackQuery):
