@@ -1,5 +1,16 @@
 import sqlite3
 
+    # init_db(): инициализация базы данных и создание таблиц.
+    # add_user(user_id, username, phone_number, message_count): добавление пользователя в базу данных.
+    # add_search_filter(user_id, keyword, region, min_price, max_price): добавление фильтра поиска в базу данных.
+    # add_tender(tender_id, tender_number, link, title, price): добавление тендера в базу данных.
+    # add_favorite_tender(user_id, tender_id): добавление тендера в избранное пользователя.
+    # get_user(user_id): получение информации о пользователе по его ID.
+    # get_search_filters(user_id): получение всех фильтров поиска пользователя.
+    # get_tenders(): получение всех тендеров.
+    # get_favorite_tenders(user_id): получение всех избранных тендеров пользователя.
+    # delete_search_filter(filter_id): удаление фильтра поиска по его ID.
+    # delete_favorite_tender(user_id, tender_id): удаление тендера из избранного по ID пользователя и тендера.
 
 def init_db():
     conn = sqlite3.connect('eisbot.db')

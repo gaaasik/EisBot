@@ -1,6 +1,6 @@
-print("version1")
+print("ver2")
 import logging
-
+import parsing
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.types import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
@@ -10,6 +10,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 import config
 import database
+import parsing
 
 logging.basicConfig(level=logging.INFO)
 
@@ -20,9 +21,7 @@ dp.middleware.setup(LoggingMiddleware())
 
 # FSM для управления состояниями
 class SearchStates(StatesGroup):
-    waiting_for_keyword = State(
-
-    )
+    waiting_for_keyword = State()
 
 
 # Список для хранения ключевых слов
@@ -39,7 +38,7 @@ reply_keyboard.add(KeyboardButton("Помощь"), KeyboardButton("Обратн�
 # Приветственное сообщение с кнопкой "Начать поиск" и reply-кнопками
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-    database.add_user(message.from_user.id, message.from_user.username,0 ,0)
+    database.add_user(message.from_user.id, message.from_user.username, "8917315038", 0)
 
     await message.answer(
         "Приветствую тебя! Знаешь ли ты, что на госзакупках можно найти самые необычные товары и услуги? Например, однажды был тендер на поставку папок для дарения. Давай начнем наш путь к успеху!",
@@ -79,17 +78,14 @@ async def start_search(callback_query: types.CallbackQuery):
 # Обработчики для кнопок фильтров поиска
 @dp.callback_query_handler(Text(equals='add_keyword'))
 async def add_keyword(callback_query: types.CallbackQuery):
-    print('пытаемся добавить 0 1rk.x gjkt ')
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, "Введите ключевое слово для поиска:",
                            reply_markup=reply_keyboard)
-    print('пытаемся добавить 1rk.x gjkt ')
     await SearchStates.waiting_for_keyword.set()
 
 
 @dp.message_handler(state=SearchStates.waiting_for_keyword)
 async def receive_keyword(message: types.Message, state: FSMContext):
-    print('пытаемся добавить rk.x gjkt ')
     user_id = message.from_user.id
     keyword = message.text
 
@@ -122,6 +118,8 @@ async def save_and_search(callback_query: types.CallbackQuery):
     await bot.send_message(callback_query.from_user.id, "Ваши параметры сохранены. Начинаем поиск...",
                            reply_markup=reply_keyboard)
     # Здесь должна быть логика для выполнения поиска и возврата результатов
+    listender = parsing.parse_zakupki("1")
+    await bot.send_message(callback_query.from_user.id,listender, reply_markup=reply_keyboard)
 
 
 # Обработчик сообщений от кнопок reply
