@@ -45,16 +45,16 @@ async def send_welcome(message: types.Message):
         reply_markup=reply_keyboard)
 
     # Создание инлайн-кнопки "Начать поиск"
-    inline_keyboard = InlineKeyboardMarkup().add(
+    start_find = InlineKeyboardMarkup().add(
         InlineKeyboardButton("Начать поиск", callback_data='start_search')
     )
 
-    await message.answer("Ты готов начать работу?", reply_markup=inline_keyboard)
+    await message.answer("Ты готов начать работу?", reply_markup=start_find)
 
 
 # Функция для получения клавиатуры фильтров поиска
 def get_search_filters_keyboard(user_id):
-    keyboard = InlineKeyboardMarkup(row_width=1)
+    keyboard = InlineKeyboardMarkup()
     add_keyword_text = "Добавить ключевое поле"
     if user_id in user_keywords and user_keywords[user_id]:
         add_keyword_text += " ✅"
