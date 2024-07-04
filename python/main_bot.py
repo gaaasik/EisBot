@@ -1,6 +1,6 @@
 from User import cursor, conn
 
-print("ver2")
+print("ver2/0")
 import logging
 import parsing
 from aiogram.utils.callback_data import CallbackData
