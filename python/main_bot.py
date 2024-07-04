@@ -1,6 +1,10 @@
+from User import cursor, conn
+
 print("ver2")
 import logging
 import parsing
+from aiogram.utils.callback_data import CallbackData
+
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.types import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
@@ -8,6 +12,8 @@ from aiogram.utils import executor
 from aiogram.dispatcher.filters import Text, state
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+
 import config
 import database
 import parsing
@@ -17,11 +23,13 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=config.API_TOKEN)
 dp = Dispatcher(bot)
 dp.middleware.setup(LoggingMiddleware())
-
+storage = MemoryStorage()
 
 # FSM для управления состояниями
-class SearchStates(StatesGroup):
-    waiting_for_keyword = State()
+class Search_States(StatesGroup):
+    keyword = State()
+    region = State()
+
 
 
 # Список для хранения ключевых слов
@@ -29,11 +37,12 @@ user_keywords = {}
 
 # Создание reply-клавиатуры для постоянного использования
 reply_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-reply_keyboard.add(KeyboardButton("Поиск тендеров"), KeyboardButton("Мои тендеры"))
+reply_keyboard.add(KeyboardButton("Поиск тендеров"))
 reply_keyboard.add(KeyboardButton("Избранное"))
 reply_keyboard.add(KeyboardButton("Больше возможностей"))
 reply_keyboard.add(KeyboardButton("Помощь"), KeyboardButton("Обратная связь"))
-
+#keyboard.add(InlineKeyboardButton("Сохранить и начать поиск", callback_data='save_and_search'))
+search_callback = CallbackData("search", "action")
 
 # Приветственное сообщение с кнопкой "Начать поиск" и reply-кнопками
 @dp.message_handler(commands=['start'])
@@ -48,56 +57,74 @@ async def send_welcome(message: types.Message):
     start_find = InlineKeyboardMarkup().add(
         InlineKeyboardButton("Начать поиск", callback_data='start_search')
     )
+   # reply_keyboard.add(KeyboardButton("Поиск тендеров", callback_data='start_search'))
 
     await message.answer("Ты готов начать работу?", reply_markup=start_find)
 
 
 # Функция для получения клавиатуры фильтров поиска
-def get_search_filters_keyboard(user_id):
-    keyboard = InlineKeyboardMarkup()
-    add_keyword_text = "Добавить ключевое поле"
-    if user_id in user_keywords and user_keywords[user_id]:
-        add_keyword_text += " ✅"
-    keyboard.add(
-        InlineKeyboardButton(add_keyword_text, callback_data='add_keyword'),
-        InlineKeyboardButton("Выбрать регион", callback_data='select_region'),
-        InlineKeyboardButton("Выбрать диапазон цен", callback_data='select_price'),
-        InlineKeyboardButton("Сохранить и начать поиск", callback_data='save_and_search')
-    )
-    return keyboard
-
+# def get_search_filters_keyboard(user_id):
+#     keyboard = InlineKeyboardMarkup()
+#     add_keyword_text = "Добавить ключевое поле"
+#     add_region = "Выбрать регион"
+#     add_price = "Выбрать диапазон цен"
+#     if user_id in user_keywords and user_keywords[user_id]:
+#         add_keyword_text += " ✅"
+#         add_price +=" ✅"
+#     keyboard.add(InlineKeyboardButton(add_keyword_text, callback_data='add_keyword'))
+#     keyboard.add(InlineKeyboardButton(add_region, callback_data='select_region'))
+#     keyboard.add(InlineKeyboardButton(add_price, callback_data='select_price'))
+#     keyboard.add(InlineKeyboardButton("Сохранить и начать поиск", callback_data='save_and_search'))
+#
+#     return keyboard
+#
 
 # Обработчик для кнопок "Начать поиск" и "Добавить поиск"
 @dp.callback_query_handler(Text(equals=['start_search', 'add_search']))
-async def start_search(callback_query: types.CallbackQuery):
-    await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(callback_query.from_user.id, "Чтобы добавить поиск, заполните фильтры (необязательно):",
-                           reply_markup=get_search_filters_keyboard(callback_query.from_user.id))
+@dp.message_handler(lambda message: message.text == "Поиск тендеров")
+async def add_search(message: types.Message):
+    await message.reply("Чтобы добавить поиск, заполните фильтры (необязательно):")
 
+    # Кнопки для добавления фильтров
+    inline_kb = InlineKeyboardMarkup()
+    inline_kb.add(
+        InlineKeyboardButton("Добавить ключевое поле", callback_data=search_callback.new(action="add_keyword")))
+    inline_kb.add(InlineKeyboardButton("Выбрать регион", callback_data=search_callback.new(action="select_region")))
+    inline_kb.add(
+        InlineKeyboardButton("Выбрать диапазон цен", callback_data=search_callback.new(action="select_price_range")))
+    inline_kb.add(
+        InlineKeyboardButton("Сохранить и начать поиск", callback_data=search_callback.new(action="save_and_search")))
+    await message.answer("Выберите опцию:", reply_markup=inline_kb)
 
-# Обработчики для кнопок фильтров поиска
-@dp.callback_query_handler(Text(equals='add_keyword'))
-async def add_keyword(callback_query: types.CallbackQuery):
-    await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(callback_query.from_user.id, "Введите ключевое слово для поиска:",
-                           reply_markup=reply_keyboard)
-    await SearchStates.waiting_for_keyword.set()
+# Обработка инлайн-кнопок
+@dp.callback_query_handler(search_callback.filter(action="add_keyword"))
+async def add_keyword_callback(call: types.CallbackQuery, callback_data: dict):
+    await call.message.answer("Введите ключевое слово для поиска:")
+    await Search_States.keyword.set()
 
-
-@dp.message_handler(state=SearchStates.waiting_for_keyword)
-async def receive_keyword(message: types.Message, state: FSMContext):
+@dp.message_handler(state=Search_States.keyword)
+async def process_keyword(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
+    print("зашли23")
     keyword = message.text
+    cursor.execute('''
+    INSERT INTO search_filters (user_id, keywords) VALUES (?, ?)
+    ''', (user_id, keyword))
+    conn.commit()
+    await state.finish()
+    await message.reply("Ключевое слово добавлено!")
+@dp.message_handler(state=Search_States.keyword)
+async def process_name(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        print("pfikb2")
+        data['Keyword'] = message.text
+        await Search_States.next()
+        await message.reply("Выберете регион")
 
-    if user_id not in user_keywords:
-        user_keywords[user_id] = []
 
-    user_keywords[user_id].append(keyword)
-    await message.answer(
-        f"Ключевое слово '{keyword}' добавлено. Текущие ключевые слова: {', '.join(user_keywords[user_id])}",
-        reply_markup=reply_keyboard)
-    await bot.send_message(message.from_user.id, "Фильтры поиска:", reply_markup=get_search_filters_keyboard(user_id))
-    await state.finish()  # Завершаем текущее состояние
+
+
+
 
 
 @dp.callback_query_handler(Text(equals='select_region'))
@@ -117,7 +144,22 @@ async def save_and_search(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, "Ваши параметры сохранены. Начинаем поиск...",
                            reply_markup=reply_keyboard)
-    # Здесь должна быть логика для выполнения поиска и возврата результатов
+    user_id = callback_query.from_user.id
+    # Получение данных из базы данных (нужно будет реализовать)
+    keywords = ...
+    regions = ...
+    min_price = ...
+    max_price = ...
+    # Сохранение фильтров поиска в базе данных
+
+
+    cursor.execute('''
+    INSERT INTO search_filters (user_id, keywords, regions, min_price, max_price)
+    VALUES (?, ?, ?, ?, ?)
+    ''', (user_id, keywords, regions, min_price, max_price))
+    conn.commit()
+    #await call.message.answer("Фильтры сохранены. Начинаем поиск...")
+    await bot.send_message(callback_query.from_user.id, text = "Тут результат парсинга")
     listender = parsing.parse_zakupki("1")
     await bot.send_message(callback_query.from_user.id,listender, reply_markup=reply_keyboard)
 
@@ -127,9 +169,10 @@ async def save_and_search(callback_query: types.CallbackQuery):
     lambda message: message.text in ["Поиск тендеров", "Мои тендеры", "Избранное", "Больше возможностей", "Помощь",
                                      "Обратная связь"])
 async def handle_reply_buttons(message: types.Message):
-    if message.text == "Поиск тендеров":
-        await start_search(message)
-    elif message.text == "Мои тендеры":
+    # if message.text == "Поиск тендеров":
+    #     print("z nen")
+    #     await  bot.send_message(message.from_user.id, "Чтобы добавить поиск, заполните фильтры (необязательно):", reply_markup=get_search_filters_keyboard(message.from_user.id))
+    if message.text == "Мои тендеры":
         await message.answer("Скоро добавим.", reply_markup=reply_keyboard)
     elif message.text == "Избранное":
         await message.answer("Тут скоро будут отображаться ваши сохраненные тендеры.", reply_markup=reply_keyboard)

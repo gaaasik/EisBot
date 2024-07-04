@@ -96,7 +96,7 @@ async def handle_fill_fields(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # Регистрируем обработчик текстового сообщения для получения ключевого слова
     context.user_data['waiting_for_keyword'] = True
     #context.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_keyword), group=1)
-    print("Остановились тут ")
+print("Остановились тут ")
 
 
 
