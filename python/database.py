@@ -1,6 +1,9 @@
 import sqlite3
 
-    # init_db(): инициализация базы данных и создание таблиц.
+from python.main_bot import *
+
+
+# init_db(): инициализация базы данных и создание таблиц.
     # add_user(user_id, username, phone_number, message_count): добавление пользователя в базу данных.
     # add_search_filter(user_id, keyword, region, min_price, max_price): добавление фильтра поиска в базу данных.
     # add_tender(tender_id, tender_number, link, title, price): добавление тендера в базу данных.
@@ -85,6 +88,30 @@ def add_search_filter(user_id, keyword, region, min_price, max_price):
 
     conn.commit()
     conn.close()
+def add_keyword_in_db(user_id,keyword):
+    conn = sqlite3.connect('eisbot.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO search_filters (user_id, keyword)
+        VALUES (?, ?)
+        ''', (user_id, keyword))
+
+    conn.commit()
+    conn.close()
+# def add_regions(user_id,regions,all_region):
+#     print("Пытаемяс добавить регионы")
+#     conn = sqlite3.connect('eisbot.db')
+#     cursor = conn.cursor()
+#     if regions == all_region:
+#         cursor.execute('''
+#            INSERT INTO search_filters (user_id, region)
+#            VALUES (?, ?)
+#            ''', (user_id, regions))
+#         conn.commit()
+#         conn.close()
+
+
+
 
 
 def add_tender(tender_id, tender_number, link, title, price):
