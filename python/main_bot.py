@@ -1,7 +1,7 @@
-from User import cursor, conn
-from create_search import *
+#from User import cursor, conn
 
-print("ver2/0")
+from create_search import*
+print("ver2.0.12")
 import logging
 import parsing
 from aiogram.utils.callback_data import CallbackData
@@ -129,6 +129,7 @@ user_keywords = {}
 # Создание reply-клавиатуры для постоянного использования
 reply_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 reply_keyboard.add(KeyboardButton("Поиск тендеров"))
+reply_keyboard.add(KeyboardButton("ПАРСИНГ (Временная кнопка)"))
 reply_keyboard.add(KeyboardButton("Избранное"))
 reply_keyboard.add(KeyboardButton("Больше возможностей"))
 reply_keyboard.add(KeyboardButton("Помощь"), KeyboardButton("Обратная связь"))
@@ -307,6 +308,21 @@ async def select_all_regions(callback_query: types.CallbackQuery):
     print("добавили в db")
 
 
+@dp.message_handler(lambda message: message.text == "ПАРСИНГ (Временная кнопка)")
+async def save_and_search_unusal(message: types.Message):
+     await message.answer("Начинаем поиск...")  #user_id = bot.message.from_user.id
+    # Получение данных из базы данных (нужно будет реализовать)
+    # Сохранение фильтров поиска в базе данных
+
+
+
+     listender = database.get_tenders()
+
+     for item in listender:
+         print(item)
+         await message.answer(str(item))
+
+
 
 @dp.callback_query_handler(Text(equals='save_and_search'))
 async def save_and_search(callback_query: types.CallbackQuery):
@@ -322,8 +338,13 @@ async def save_and_search(callback_query: types.CallbackQuery):
     #database.add_regions()
     #await call.message.answer("Фильтры сохранены. Начинаем поиск...")
     await bot.send_message(callback_query.from_user.id, text = "Тут результат парсинга")
-    listender = parsing.parse_zakupki("1")
-    await bot.send_message(callback_query.from_user.id,listender, reply_markup=reply_keyboard)
+
+    listender = database.get_tenders()
+
+    print(listender)
+    for item in listender:
+
+        await bot.send_message(callback_query.from_user.id,text = str(item))
 
 
 

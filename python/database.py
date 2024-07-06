@@ -1,6 +1,5 @@
 import sqlite3
 
-from python.main_bot import *
 
 
 # init_db(): инициализация базы данных и создание таблиц.
@@ -41,15 +40,79 @@ def init_db():
     )
     ''')
 
+    # cursor.execute('''
+    # CREATE TABLE IF NOT EXISTS tenders (
+    #     tender_id INTEGER PRIMARY KEY,
+    #     tender_number TEXT,
+    #     link TEXT,
+    #     title TEXT,
+    #     price REAL
+    # )
+    # ''')
+
+
+    # #Удаление таблицы
+    # cursor.execute("DROP TABLE tenders")
+    # print("Table dropped... ")
+
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS tenders (
-        tender_id INTEGER PRIMARY KEY,
-        tender_number TEXT,
-        link TEXT,
-        title TEXT,
-        price REAL
-    )
+        CREATE TABLE IF NOT EXISTS tenders (
+            tender_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            number TEXT,
+            url TEXT,
+            name TEXT,
+            price TEXT,
+            employer TEXT,
+            dateStartAuction TEXT,
+            dateUpdate TEXT,
+            datePost TEXT,
+            platform TEXT,
+            securityRequest TEXT, 
+            typeAuction TEXT,
+            region TEXT,
+            status TEXT,
+            checking_notifications BOOLEAN DEFAULT 0 
+        )
     ''')
+
+
+
+    #Вроде работает
+    # cursor.execute('''
+    #         CREATE TABLE IF NOT EXISTS tender (
+    #             tender_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    #             number TEXT,
+    #             url TEXT,
+    #             name TEXT,
+    #             price TEXT,
+    #             employer TEXT,
+    #             dateStartAuction TEXT,
+    #             dateUpdate TEXT,
+    #             datePost TEXT,
+    #             platform TEXT,
+    #             securityRequest TEXT,
+    #             typeAuction TEXT,
+    #             region TEXT,
+    #             status TEXT,
+    #             checking_notifications bool DEFAULT 0
+    #         )
+    #     ''')
+    # cursor.execute("""INSERT INTO tender(number, url, name, price, employer, dateStartAuction, dateUpdate, datePost, platform, securityRequest, typeAuction, region, status)
+    #         VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?)""",("167300002824000056",
+    #                 "https://zakupki.gov.ru/epz/order/notice/ea20/view/common-info.html?regNumber=0167300002824000056",
+    #                 "Наименование объекта закупки",
+    #                 "Начальная (максимальная) цена контракта",
+    #                 "Организация, осуществляющая размещение",
+    #                 "25.04.2024",
+    #                 "25.04.2024",
+    #                 "https://voicemaker.in/",
+    #                 "РТС Тендер",
+    #                 "key_securityRequest",
+    #                 "key_typeAuction",
+    #                 "Region",
+    #                 "notification_status"
+    #                 )
+    #                )
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS favorite_tenders (
@@ -98,6 +161,7 @@ def add_keyword_in_db(user_id,keyword):
 
     conn.commit()
     conn.close()
+
 # def add_regions(user_id,regions,all_region):
 #     print("Пытаемяс добавить регионы")
 #     conn = sqlite3.connect('eisbot.db')
@@ -109,22 +173,53 @@ def add_keyword_in_db(user_id,keyword):
 #            ''', (user_id, regions))
 #         conn.commit()
 #         conn.close()
+def get_tenders():
+    print("Значение тендера")
+    conn = sqlite3.connect('eisbot.db')
+    cursor = conn.cursor()
 
+    #
+    cursor.execute('''SELECT * from tenders where status= 'FALSE' or tender_id>0 '''
 
-
+                   )
+    print("Вывод тендеров")
+    tenders = cursor.fetchall()
+    return tenders
 
 
 def add_tender(tender_id, tender_number, link, title, price):
     conn = sqlite3.connect('eisbot.db')
     cursor = conn.cursor()
 
-    cursor.execute('''
-    INSERT OR REPLACE INTO tenders (tender_id, tender_number, link, title, price)
-    VALUES (?, ?, ?, ?, ?)
-    ''', (tender_id, tender_number, link, title, price))
+    # cursor.execute('''
+    # INSERT OR REPLACE INTO tenders (tender_id, tender_number, link, title, price)
+    # VALUES (?, ?, ?, ?, ?)
+    # ''', (tender_id, tender_number, link, title, price))
+    #
+    # conn.commit()
+    # conn.close()
 
-    conn.commit()
-    conn.close()
+    #
+    cursor.execute('''
+           INSERT INTO tenders (tender_id,number, url, name, price, employer, dateStartAuction, dateUpdate, datePost, platform, securityRequest, typeAuction, region, status)
+           VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ''', (1,
+             "167300002824000056",
+             "https://zakupki.gov.ru/epz/order/notice/ea20/view/common-info.html?regNumber=0167300002824000056",
+             "Наименование объекта закупки",
+             "Начальная (максимальная) цена контракта",
+             "Организация, осуществляющая размещение",
+             "25.04.2024",
+             "25.04.2024",
+             "https://voicemaker.in/",
+             "РТС Тендер",
+             "key_securityRequest",
+             "key_typeAuction",
+             "Region",
+             False
+             ))
+
+
 
 
 def add_favorite_tender(user_id, tender_id):
@@ -166,17 +261,17 @@ def get_search_filters(user_id):
     return filters
 
 
-def get_tenders():
-    conn = sqlite3.connect('eisbot.db')
-    cursor = conn.cursor()
-
-    cursor.execute('''
-    SELECT * FROM tenders
-    ''')
-    tenders = cursor.fetchall()
-
-    conn.close()
-    return tenders
+# def get_tenders():
+#     conn = sqlite3.connect('eisbot.db')
+#     cursor = conn.cursor()
+#
+#     cursor.execute('''
+#     SELECT * FROM tenders
+#     ''')
+#     tenders = cursor.fetchall()
+#
+#     conn.close()
+#     return tenders
 
 
 def get_favorite_tenders(user_id):
@@ -216,3 +311,6 @@ def delete_favorite_tender(user_id, tender_id):
 
     conn.commit()
     conn.close()
+
+init_db()
+#get_tenders()

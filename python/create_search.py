@@ -1,13 +1,13 @@
 import logging
 
-from python.main_bot import FSMContext
+from main_bot import FSMContext
 
 import database
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.dispatcher.filters import Text
-from python.main_bot import dp, bot, all_regions, Search_States, pages, current_page, search_callback
-from python.main_bot import *
+from main_bot import dp, bot, all_regions, Search_States, pages, current_page, search_callback
+from main_bot import *
 selected_regions=[]
 
 # @dp.message_handler(lambda message: message.text == "Поиск тендеров")

@@ -1,23 +1,8 @@
 
-from selenium.webdriver.common.by import By
-#from bs4 import BeautifulSoup
-from dataclasses import dataclass
-from urllib.parse import urljoin
-from typing import List
-
-import numpy as np
-
-import simplejson
-import json
-
-from selenium import webdriver
 import time
-from bs4 import BeautifulSoup
-import requests
-
 import requests
 from bs4 import BeautifulSoup
-
+from main_bot import *
 
 def replace_str(str):
     # for string in parent.stripped_strings:
@@ -59,14 +44,14 @@ def parse_zakupki(search_string):
 
         tenders.append([tender_id, tender_title, tender_price, tender_customer, tender_link])
     print(tenders)
-    return
+    return tenders
 
 # Example usage
-result = parse_zakupki("mobi")
-print(result,"готово")
-# Пример использования
-result = parse_zakupki("привет")
-print(result)
+# result = parse_zakupki("mobi")
+# print(result,"готово")
+# # Пример использования
+# result = parse_zakupki("привет")
+# print(result)
 def parseEis(msg):
     clearList = [[0] * 3 for i in range(10)]
     print("УУУУУУУУУУУУУУУУУСССССССПППППППППППЕЕЕЕЕЕЕЕЕЕЕЕХХХХХХХ")
@@ -136,8 +121,8 @@ def parseEis(msg):
     #
     #  					   })
 
-    print(clearList)
-    return(clearList)
+    # print(clearList)
+    # return(clearList)
 
 
 
