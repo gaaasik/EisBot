@@ -1,10 +1,8 @@
 #from User import cursor, conn
-print("tol new")
-
-print("tol new")
+print("ver2.0")
+import sqlite3
 
 from create_search import*
-print("ver2.0.12")
 import logging
 import parsing
 from aiogram.utils.callback_data import CallbackData
@@ -16,10 +14,12 @@ from aiogram.dispatcher.filters import Text, state
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-
+import showTendersInMessage
 import config
 import database
 import parsing
+from showTendersInMessage import keyboard_to_show_tenders, create_tender_message
+
 all_regions = ["г. Москва", "Белгородская область",
                "Брянская область",
                "Владимирская область",
@@ -132,7 +132,7 @@ user_keywords = {}
 # Создание reply-клавиатуры для постоянного использования
 reply_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 reply_keyboard.add(KeyboardButton("Поиск тендеров"))
-reply_keyboard.add(KeyboardButton("ПАРСИНГ (Временная кнопка)"))
+reply_keyboard.add(KeyboardButton("Показать найденные тендера (Временная кнопка)"))
 reply_keyboard.add(KeyboardButton("Избранное"))
 reply_keyboard.add(KeyboardButton("Больше возможностей"))
 reply_keyboard.add(KeyboardButton("Помощь"), KeyboardButton("Обратная связь"))
@@ -301,7 +301,7 @@ async def process_page_change(callback_query: types.CallbackQuery):
 
 @dp.callback_query_handler(Text(equals='all_regions'))
 async def select_all_regions(callback_query: types.CallbackQuery):
-    print("все регионы")
+
     save_and_search_btn = InlineKeyboardMarkup().add(
         InlineKeyboardButton("Сохранить и начать поиск", callback_data='save_and_search')
     )
@@ -311,19 +311,40 @@ async def select_all_regions(callback_query: types.CallbackQuery):
     print("добавили в db")
 
 
-@dp.message_handler(lambda message: message.text == "ПАРСИНГ (Временная кнопка)")
+@dp.message_handler(lambda message: message.text == "Показать найденные тендера (Временная кнопка)")
 async def save_and_search_unusal(message: types.Message):
-     await message.answer("Начинаем поиск...")  #user_id = bot.message.from_user.id
+     #await message.answer("Начинаем поиск...")  #user_id = bot.message.from_user.id
     # Получение данных из базы данных (нужно будет реализовать)
     # Сохранение фильтров поиска в базе данных
-
+    #  parsing.get_page(
+    #      url='https://zakupki.gov.ru/epz/order/extendedsearch/results.html?searchString=%D0%BC%D0%B0%D1%80%D0%BA%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%BD%D1%8B%D0%B5+%D0%BA%D0%BE%D0%BD%D0%B2%D0%B5%D1%80%D1%82%D1%8B&morphology=on&search-filter=%D0%94%D0%B0%D1%82%D0%B5+%D1%80%D0%B0%D0%B7%D0%BC%D0%B5%D1%89%D0%B5%D0%BD%D0%B8%D1%8F&pageNumber=1&sortDirection=false&recordsPerPage=_10&showLotsInfoHidden=false&sortBy=UPDATE_DATE&fz44=on&fz223=on&af=on&priceFromGeneral=100000&currencyIdGeneral=-1')
 
 
      listender = database.get_tenders()
 
-     for item in listender:
-         print(item)
-         await message.answer(str(item))
+
+     show_keyboard = keyboard_to_show_tenders(listender)
+     message_text = create_tender_message(listender[0], 1, len(listender))
+     await message.answer(message_text, reply_markup=show_keyboard)
+
+
+     # for item in listender:
+     #
+     #     # print(list.get(0).listender)
+     #
+     #     text = f"Тендер №{1} из {len(listender)} \nОбъект закупки: {item[3]}\nРегион закупки: {item[12]} \nНачальная цена: {item[4]} \nЗаказчик: {item[5]} \nДата размещения: {item[6]}" \
+     #            f" \nДата окончания: {item[7]}" \
+     #            f"Ссылка: {item[2]}"
+     #           show_keyboard=showTendersInMessage.keyboard_to_show_tenders(listender)
+
+         # await message.answer(text, reply_markup=show_keyboard)
+         # break
+
+
+        # keyboard = keyboard_to_show_tenders(listtender)
+        # message_text = create_tender_message(listtender[0], 1, len(listtender))
+        # await message.answer(message_text, reply_markup=keyboard)
+
 
 
 
@@ -335,14 +356,17 @@ async def save_and_search(callback_query: types.CallbackQuery):
     await bot.send_message(callback_query.from_user.id, "Ваши параметры сохранены. Начинаем поиск...",
                            reply_markup=reply_keyboard)
     user_id = callback_query.from_user.id
+    parsing.get_page(url='https://zakupki.gov.ru/epz/order/extendedsearch/results.html?searchString=%D0%BC%D0%B0%D1%80%D0%BA%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%BD%D1%8B%D0%B5+%D0%BA%D0%BE%D0%BD%D0%B2%D0%B5%D1%80%D1%82%D1%8B&morphology=on&search-filter=%D0%94%D0%B0%D1%82%D0%B5+%D1%80%D0%B0%D0%B7%D0%BC%D0%B5%D1%89%D0%B5%D0%BD%D0%B8%D1%8F&pageNumber=1&sortDirection=false&recordsPerPage=_10&showLotsInfoHidden=false&sortBy=UPDATE_DATE&fz44=on&fz223=on&af=on&priceFromGeneral=100000&currencyIdGeneral=-1')
+
     # Получение данных из базы данных (нужно будет реализовать)
+
     # Сохранение фильтров поиска в базе данных
 
-    #database.add_regions()
-    #await call.message.answer("Фильтры сохранены. Начинаем поиск...")
     await bot.send_message(callback_query.from_user.id, text = "Тут результат парсинга")
 
     listender = database.get_tenders()
+
+    await bot.send_message(callback_query.from_user.id, text = "")
 
     print(listender)
     for item in listender:
@@ -350,6 +374,40 @@ async def save_and_search(callback_query: types.CallbackQuery):
         await bot.send_message(callback_query.from_user.id,text = str(item))
 
 
+
+
+##################
+
+
+
+@dp.message_handler(commands=['show_tenders'])
+async def show_tenders(message: types.Message):
+    listender = database.get_tenders()
+    keyboard = keyboard_to_show_tenders(listender)
+    message_text = create_tender_message(listender[0], 1, len(listender))
+    await message.answer(message_text, reply_markup=keyboard)
+
+
+
+@dp.callback_query_handler(lambda c: c.data and c.data.startswith('tender_'))
+async def process_tender_callback(callback_query: types.CallbackQuery):
+    listender = database.get_tenders()
+    tender_index = int(callback_query.data.split('_')[1]) - 1
+    keyboard = keyboard_to_show_tenders(listender, selected_tender_index=tender_index + 1)
+    message_text = create_tender_message(listender[tender_index], tender_index + 1, len(listender))
+    await bot.edit_message_text(message_text, callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+    await bot.answer_callback_query(callback_query.id)
+
+@dp.callback_query_handler(lambda c: c.data and (c.data.startswith('prev_page_') or c.data.startswith('next_page_')))
+async def process_page_navigation(callback_query: types.CallbackQuery):
+    listender = database.get_tenders()
+    page = int(callback_query.data.split('_')[2])
+    keyboard = keyboard_to_show_tenders(listender, page=page)
+    message_text = create_tender_message(listender[0], 1, len(listender))
+    await bot.edit_message_text(message_text, callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+    await bot.answer_callback_query(callback_query.id)
+
+################
 
 # Error handling
 @dp.errors_handler()
