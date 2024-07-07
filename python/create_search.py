@@ -40,9 +40,9 @@ def choose_regions():
             rows.append(row)
         # Добавляем стрелки переключения страниц
         rows.append([
-            InlineKeyboardButton("⏪", callback_data=f'prev_{page_num}'),
-            InlineKeyboardButton(f"{page_num + 1}/{len(pages)}", callback_data=f'page_{page_num}'),
-            InlineKeyboardButton("⏩", callback_data=f'next_{page_num}')
+            InlineKeyboardButton("⏪", callback_data=f'prevRegion_{page_num}'),
+            InlineKeyboardButton(f"{page_num + 1}/{len(pages)}", callback_data=f'pageRegion_{page_num}'),
+            InlineKeyboardButton("⏩", callback_data=f'nextRegion_{page_num}')
         ])
         rows.append([InlineKeyboardButton("Выбрать все регионы", callback_data='all_regions')])
         inline_keyboard.append(rows)
@@ -94,15 +94,15 @@ async def process_region_selection(callback_query: types.CallbackQuery):
 
 
 # Обработчик нажатия на стрелки
-@dp.callback_query_handler(lambda c: c.data.startswith(('prev', 'next', 'page')))
+@dp.callback_query_handler(lambda c: c.data.startswith(('prevRegion', 'nextRegion', 'pageRegion')))
 async def process_page_change(callback_query: types.CallbackQuery):
     try:
 
         current_page = int(callback_query.data.split('_')[1])
         print(current_page)
-        if callback_query.data.startswith('prev'):
+        if callback_query.data.startswith('prevRegion'):
             current_page = max(0, current_page - 1)
-        elif callback_query.data.startswith('next'):
+        elif callback_query.data.startswith('nextRegion'):
             current_page = min(len(pages) - 1, current_page + 1)
 
         await bot.edit_message_text(

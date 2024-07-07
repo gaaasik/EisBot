@@ -279,15 +279,15 @@ async def process_region_selection(callback_query: types.CallbackQuery):
 
 
 # Обработчик нажатия на стрелки
-@dp.callback_query_handler(lambda c: c.data.startswith(('prev', 'next', 'page')))
+@dp.callback_query_handler(lambda c: c.data.startswith(('prev_region', 'next_region', 'page_region')))
 async def process_page_change(callback_query: types.CallbackQuery):
     try:
         print("кнопка")
         current_page = int(callback_query.data.split('_')[1])
 
-        if callback_query.data.startswith('prev'):
+        if callback_query.data.startswith('prev_region'):
             current_page = max(0, current_page - 1)
-        elif callback_query.data.startswith('next'):
+        elif callback_query.data.startswith('next_region'):
             current_page = min(len(pages) - 1, current_page + 1)
 
         await bot.edit_message_text(
@@ -309,42 +309,6 @@ async def select_all_regions(callback_query: types.CallbackQuery):
 
 
     print("добавили в db")
-
-
-@dp.message_handler(lambda message: message.text == "Показать найденные тендера (Временная кнопка)")
-async def save_and_search_unusal(message: types.Message):
-     #await message.answer("Начинаем поиск...")  #user_id = bot.message.from_user.id
-    # Получение данных из базы данных (нужно будет реализовать)
-    # Сохранение фильтров поиска в базе данных
-    #  parsing.get_page(
-    #      url='https://zakupki.gov.ru/epz/order/extendedsearch/results.html?searchString=%D0%BC%D0%B0%D1%80%D0%BA%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%BD%D1%8B%D0%B5+%D0%BA%D0%BE%D0%BD%D0%B2%D0%B5%D1%80%D1%82%D1%8B&morphology=on&search-filter=%D0%94%D0%B0%D1%82%D0%B5+%D1%80%D0%B0%D0%B7%D0%BC%D0%B5%D1%89%D0%B5%D0%BD%D0%B8%D1%8F&pageNumber=1&sortDirection=false&recordsPerPage=_10&showLotsInfoHidden=false&sortBy=UPDATE_DATE&fz44=on&fz223=on&af=on&priceFromGeneral=100000&currencyIdGeneral=-1')
-
-
-     listender = database.get_tenders()
-
-
-     show_keyboard = keyboard_to_show_tenders(listender)
-     message_text = create_tender_message(listender[0], 1, len(listender))
-     await message.answer(message_text, reply_markup=show_keyboard)
-
-
-     # for item in listender:
-     #
-     #     # print(list.get(0).listender)
-     #
-     #     text = f"Тендер №{1} из {len(listender)} \nОбъект закупки: {item[3]}\nРегион закупки: {item[12]} \nНачальная цена: {item[4]} \nЗаказчик: {item[5]} \nДата размещения: {item[6]}" \
-     #            f" \nДата окончания: {item[7]}" \
-     #            f"Ссылка: {item[2]}"
-     #           show_keyboard=showTendersInMessage.keyboard_to_show_tenders(listender)
-
-         # await message.answer(text, reply_markup=show_keyboard)
-         # break
-
-
-        # keyboard = keyboard_to_show_tenders(listtender)
-        # message_text = create_tender_message(listtender[0], 1, len(listtender))
-        # await message.answer(message_text, reply_markup=keyboard)
-
 
 
 
@@ -377,35 +341,108 @@ async def save_and_search(callback_query: types.CallbackQuery):
 
 
 ##################
+@dp.message_handler(lambda message: message.text == "Показать найденные тендера (Временная кнопка)")
+async def save_and_search_unusal(message: types.Message):
+    listtender = database.get_tenders()  # Получаем список тендеров из базы данных
 
+    if not listtender:
+        await message.answer("Нет доступных тендеров.")
+        return
 
-
-@dp.message_handler(commands=['show_tenders'])
-async def show_tenders(message: types.Message):
-    listender = database.get_tenders()
-    keyboard = keyboard_to_show_tenders(listender)
-    message_text = create_tender_message(listender[0], 1, len(listender))
+    keyboard = keyboard_to_show_tenders(listtender)
+    message_text = create_tender_message(listtender[0], 1, len(listtender))
     await message.answer(message_text, reply_markup=keyboard)
 
 
+# Обработчик команды /show_tenders для отображения первой страницы с тендерами
+# Обработчик для команды /show_tenders
+@dp.message_handler(commands=['show_tenders'])
+async def show_tenders(message: types.Message):
+    listtender = database.get_tenders()  # Получаем список тендеров из базы данных
 
-@dp.callback_query_handler(lambda c: c.data and c.data.startswith('tender_'))
-async def process_tender_callback(callback_query: types.CallbackQuery):
-    listender = database.get_tenders()
-    tender_index = int(callback_query.data.split('_')[1]) - 1
-    keyboard = keyboard_to_show_tenders(listender, selected_tender_index=tender_index + 1)
-    message_text = create_tender_message(listender[tender_index], tender_index + 1, len(listender))
-    await bot.edit_message_text(message_text, callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
-    await bot.answer_callback_query(callback_query.id)
+    if not listtender:
+        await message.answer("Нет доступных тендеров.")
+        return
 
-@dp.callback_query_handler(lambda c: c.data and (c.data.startswith('prev_page_') or c.data.startswith('next_page_')))
-async def process_page_navigation(callback_query: types.CallbackQuery):
-    listender = database.get_tenders()
-    page = int(callback_query.data.split('_')[2])
-    keyboard = keyboard_to_show_tenders(listender, page=page)
-    message_text = create_tender_message(listender[0], 1, len(listender))
-    await bot.edit_message_text(message_text, callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
-    await bot.answer_callback_query(callback_query.id)
+    keyboard = keyboard_to_show_tenders(listtender)
+    message_text = create_tender_message(listtender[0], 1, len(listtender))
+    await message.answer(message_text, reply_markup=keyboard)
+
+# Обработчик для нажатия на кнопки навигации по страницам и выбора тендеров
+@dp.callback_query_handler(lambda c: c.data and (c.data.startswith('prev_page_tenders') or c.data.startswith('next_page_tenders') or c.data.startswith('tender_')))
+async def process_page_navigation(callback_query: types.CallbackQuery, state: FSMContext):
+    listtender = database.get_tenders()  # Получаем список тендеров
+    action = callback_query.data.split('_')[0]
+
+    # Инициализация переменной current_page
+    current_page = 1
+
+    # Проверка нажатия на кнопку выбора тендера
+    if action == 'tender':
+        print("тендер")
+        selected_tender_index = int(callback_query.data.split('_')[1])
+        selected_tender = listtender[selected_tender_index - 1]  # Выбираем данные выбранного тендера
+        current_page = (selected_tender_index - 1) // 5 + 1  # Определяем текущую страницу
+        keyboard = keyboard_to_show_tenders(listtender, selected_tender_index, page=current_page)
+        message_text = create_tender_message(selected_tender, selected_tender_index, len(listtender))
+    else:
+        # Обработка кнопок навигации
+        if callback_query.data.startswith('prev_page_tenders'):
+            print("стрелка1")
+            current_page = int(callback_query.data.split('_')[3])
+            print(current_page)
+
+        elif callback_query.data.startswith('next_page_tenders'):
+            print("стрелка")
+            current_page = int(callback_query.data.split('_')[3])
+            print(current_page)
+
+        total_pages = (len(listtender) + 4) // 5  # Определяем общее количество страниц
+
+        if current_page < 1 or current_page > total_pages:
+            await bot.answer_callback_query(callback_query.id, text="Недопустимая страница.", show_alert=True)
+            return
+
+        start_index = (current_page - 1) * 5
+        keyboard = keyboard_to_show_tenders(listtender, page=current_page)
+        selected_tender_index = start_index + 1  # Индекс первого тендера на текущей странице
+        selected_tender = listtender[start_index] if start_index < len(listtender) else None
+        if selected_tender:
+            message_text = create_tender_message(selected_tender, selected_tender_index, len(listtender))
+        else:
+            message_text = "Нет доступных тендеров."
+
+    # Проверка, нужно ли изменять сообщение и клавиатуру
+    if callback_query.message.text != message_text or callback_query.message.reply_markup != keyboard:
+        await bot.edit_message_text(message_text, callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+    else:
+        # Если сообщение и клавиатура не изменились, отправляем пустой ответ на callback_query
+        await bot.answer_callback_query(callback_query.id)
+
+
+
+    ######################
+    # listender = database.get_tenders()  # Получаем список тендеров (замените на ваш метод получения данных)
+    # current_page = int(callback_query.data.split('_')[2]) if callback_query.data.startswith('prev_page_tenders') or callback_query.data.startswith('next_page_tenders') else 1
+    # count_tenders = len(listender)
+    # if callback_query.data.startswith('tender_'):
+    #     selected_tender_index = int(callback_query.data.split('_')[1])
+    #     selected_tender = listender[selected_tender_index - 1]  # Выбираем данные выбранного тендера
+    #     message_text = create_tender_message(selected_tender,selected_tender_index,count_tenders)
+    #     keyboard = keyboard_to_show_tenders(listender, selected_tender_index, page=current_page)
+    #     await bot.edit_message_text(message_text, callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+    # else:
+    #     tender_index = int(callback_query.data.split('_')[1]) - 1
+    #     keyboard = keyboard_to_show_tenders(listender, page=current_page)
+    #     message_text = create_tender_message(listender[(current_page - 1) * 5], tender_index + 1, len(listender))
+    #     await bot.edit_message_text(message_text, callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+    #
+    #
+    #     keyboard = keyboard_to_show_tenders(listender, page=current_page)
+    #     message_text = create_tender_message(listender[(current_page - 1) * 5])  # Исправлено: берем первый тендер на текущей странице
+    #     await bot.edit_message_text(message_text, callback_query.from_user.id, callback_query.message.message_id, reply_markup=keyboard)
+    #
+    # await bot.answer_callback_query(callback_query.id)
 
 ################
 
