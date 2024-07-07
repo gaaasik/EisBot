@@ -1,5 +1,4 @@
 #from User import cursor, conn
-print("ver2.0.12")
 
 from create_search import*
 print("ver2.0.12")
