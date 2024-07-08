@@ -1,14 +1,13 @@
 import logging
-
-from main import FSMContext,dp, bot, all_regions, Search_States, pages, current_page, search_callback
-
-from bot.database import database
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
-from aiogram.dispatcher.filters import Text
-#from main_bot import dp, bot, all_regions, Search_States, pages, current_page, search_callback
-#from main_bot import *
-selected_regions=[]
+from bot.start_bot import dp,bot
+from bot.database import database
+from bot.all_handlers.another_function import Search_States,pages,all_regions,search_callback,current_page,selected_regions
+from bot.keyboards.choose_region_keyboard import choose_regions
+#
+
+
 
 # @dp.message_handler(lambda message: message.text == "Поиск тендеров")
 # async def add_search(message: types.Message):
@@ -25,45 +24,21 @@ selected_regions=[]
 #     await message.answer("Выберите опцию:", reply_markup=inline_kb)
 
 # Функция для обработки выбора регионов
-def choose_regions():
-      # Здесь должны быть все регионы
 
-
-    print("формируем кнопки")
-    inline_keyboard = []
-    for page_num, page in enumerate(pages):
-        rows = []
-        for i in range(0, len(page), 2):
-            row = [InlineKeyboardButton(page[i], callback_data=f'region_{page_num}_{i}')]
-            if i + 1 < len(page):
-                row.append(InlineKeyboardButton(page[i + 1], callback_data=f'region_{page_num}_{i + 1}'))
-            rows.append(row)
-        # Добавляем стрелки переключения страниц
-        rows.append([
-            InlineKeyboardButton("⏪", callback_data=f'prevRegion_{page_num}'),
-            InlineKeyboardButton(f"{page_num + 1}/{len(pages)}", callback_data=f'pageRegion_{page_num}'),
-            InlineKeyboardButton("⏩", callback_data=f'nextRegion_{page_num}')
-        ])
-        rows.append([InlineKeyboardButton("Выбрать все регионы", callback_data='all_regions')])
-        inline_keyboard.append(rows)
-
-    # Отображаем первую страницу
-    return InlineKeyboardMarkup(inline_keyboard=inline_keyboard[current_page])
-
-@dp.message_handler(state=Search_States.keyword)
-async def process_keyword(message: types.Message, state: FSMContext):
-    keyword = message.text
-    database.add_keyword_in_db(message.from_user.id, keyword)
-    search_filters={'user_id': message.from_user.id,'keywords':keyword}
-
-    print(search_filters)
-
-    await message.reply("Ключевое слово "+keyword+" добавлено!")
-    inline_kb = InlineKeyboardMarkup()
-    inline_kb.add(InlineKeyboardButton("Выбрать регион", callback_data=search_callback.new(action="select_region")))
-    await message.reply(text="Выберете регион: ",reply_markup=choose_regions())
-    await state.finish()
-
+# @dp.message_handler(state=Search_States.keyword)
+# async def process_keyword(message: types.Message, state: FSMContext):
+#     keyword = message.text
+#     database.add_keyword_in_db(message.from_user.id, keyword)
+#     search_filters={'user_id': message.from_user.id,'keywords':keyword}
+#
+#     print(search_filters)
+#
+#     await message.reply("Ключевое слово "+keyword+" добавлено!")
+#     inline_kb = InlineKeyboardMarkup()
+#     inline_kb.add(InlineKeyboardButton("Выбрать регион", callback_data=search_callback.new(action="select_region")))
+#     await message.reply(text="Выберете регион: ",reply_markup=choose_regions())
+#     await state.finish()
+#
 
 
 # Обработчик нажатий на инлайн кнопки

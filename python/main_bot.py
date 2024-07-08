@@ -2,7 +2,7 @@
 print("ver2.0")
 import sqlite3
 
-from create_search import*
+#from create_search import*
 import logging
 import parsing
 from aiogram.utils.callback_data import CallbackData
@@ -19,6 +19,7 @@ import config
 import database
 import parsing
 from showTendersInMessage import keyboard_to_show_tenders, create_tender_message
+
 
 all_regions = ["г. Москва", "Белгородская область",
                "Брянская область",
@@ -109,7 +110,7 @@ all_regions = ["г. Москва", "Белгородская область",
                "Еврейская автономная область",
                "Чукотский автономный округ"]
 current_page = 0
-pages = [all_regions[i:i + 20] for i in range(0, len(all_regions), 20)]  # Формируем страницы по 20 регионов
+
 selected_region = None
 items_per_page = 20
 
@@ -117,7 +118,9 @@ logging.basicConfig(level=logging.INFO)
 storage = MemoryStorage()
 bot = Bot(token=config.API_TOKEN)
 dp = Dispatcher(bot,storage=storage)
+
 dp.middleware.setup(LoggingMiddleware())
+
 #search_filters_dict={}
 
 # FSM для управления состояниями

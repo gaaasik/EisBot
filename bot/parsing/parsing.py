@@ -2,8 +2,9 @@ import json
 import time
 import requests
 from bs4 import BeautifulSoup
-from bot.database import database
-
+from bot.database.database import insert_data_in_db,select_true_false_db
+import bot.data
+from bot.start_bot import dp,bot
 #Парсинг
 
 
@@ -52,11 +53,11 @@ def add_tender(url, countTender):
     all_title_info_dict["url"] = url
     all_title_info_dict["number"] = url[-19:]
     # записываем все данные по тендеру в файл
-    with open(f"data/{countTender}Dict_data.json", "w", encoding="utf-8") as file:
+    with open(f"bot/data/{countTender}Dict_data.json", "w", encoding="utf-8") as file:
         json.dump(all_title_info_dict, file, indent=4, ensure_ascii=False)
 
     # открываем данные по тендеру которые лежат в файле
-    with open(f"data/{countTender}Dict_data.json", encoding='utf-8') as file:
+    with open(f"bot/data/{countTender}Dict_data.json", encoding='utf-8') as file:
         dict_data_tender = json.load(file)
 
     # открываем все ключи из файла всех ключей
@@ -64,7 +65,7 @@ def add_tender(url, countTender):
         all_key = json.load(file)
 
     dict_data_tender = check_all_data_tender_error(dict_data_tender, all_key)
-    database.insert_data_in_db("tenders", dict_data_tender, all_key)
+    insert_data_in_db("tenders", dict_data_tender, all_key)
 
 
 
@@ -85,7 +86,7 @@ def check_new_tenders(url):
     for tender in all_tenders:
         tender_number = tender.text.strip().replace("№ ", "")
 
-        if database.select_true_false_db("tenders", "number", tender_number):
+        if select_true_false_db("tenders", "number", tender_number):
             print("Уже есть")
         else:
             print("Новый тендер")

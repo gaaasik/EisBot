@@ -1,7 +1,41 @@
 import sqlite3
+path_db='bot/database/eisbot.db'
+def creatTable_db():
+    conn = sqlite3.connect(path_db)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS tenders (
+            tender_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            number TEXT,
+            url TEXT,
+            name TEXT,
+            price TEXT,
+            employer TEXT,
+            dateStartAuction TEXT,
+            dateUpdate TEXT,
+            datePost TEXT,
+            platform TEXT,
+            securityRequest TEXT,
+            typeAuction TEXT,
+            region TEXT,
+            status TEXT,
+            checking_notifications BOOLEAN DEFAULT 0
+        );''')
+    conn.commit()
+    conn.close()
 
+def drop_tabel(table):
+    # Удаление таблицы
+    conn = sqlite3.connect(path_db)
+    cursor = conn.cursor()
+    cursor.execute(f"DROP TABLE {table}")
+    print(f"Table {table} dropped... ")
+    conn.commit()
+    conn.close()
+#drop_tabel('tenders')
+# creatTable_db()
 def init_db():
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
 
     # Создание таблиц
@@ -92,9 +126,8 @@ def init_db():
     conn.commit()
     conn.close()
 
-
 def add_user(user_id, username, phone_number, message_count):
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -105,9 +138,8 @@ def add_user(user_id, username, phone_number, message_count):
     conn.commit()
     conn.close()
 
-
 def add_search_filter(user_id, keyword, region, min_price, max_price):
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -118,7 +150,7 @@ def add_search_filter(user_id, keyword, region, min_price, max_price):
     conn.commit()
     conn.close()
 def add_keyword_in_db(user_id,keyword):
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
     cursor.execute('''
         INSERT INTO search_filters (user_id, keyword)
@@ -141,7 +173,7 @@ def add_keyword_in_db(user_id,keyword):
 #         conn.close()
 def get_tenders():
     print("Значение тендера")
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
 
     #
@@ -150,46 +182,45 @@ def get_tenders():
                    )
     print("Вывод тендеров")
     tenders = cursor.fetchall()
+    conn.commit()
+    conn.close()
     return tenders
 
-
-def add_tender(tender_id, tender_number, link, title, price):
-    conn = sqlite3.connect('eisbot.db')
-    cursor = conn.cursor()
-
-    # cursor.execute('''
-    # INSERT OR REPLACE INTO tenders (tender_id, tender_number, link, title, price)
-    # VALUES (?, ?, ?, ?, ?)
-    # ''', (tender_id, tender_number, link, title, price))
-    #
-    # conn.commit()
-    # conn.close()
-
-    #
-    cursor.execute('''
-           INSERT INTO tenders (tender_id,number, url, name, price, employer, dateStartAuction, dateUpdate, datePost, platform, securityRequest, typeAuction, region, status)
-           VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ''', (1,
-             "167300002824000056",
-             "https://zakupki.gov.ru/epz/order/notice/ea20/view/common-info.html?regNumber=0167300002824000056",
-             "Наименование объекта закупки",
-             "Начальная (максимальная) цена контракта",
-             "Организация, осуществляющая размещение",
-             "25.04.2024",
-             "25.04.2024",
-             "https://voicemaker.in/",
-             "РТС Тендер",
-             "key_securityRequest",
-             "key_typeAuction",
-             "Region",
-             False
-             ))
-
-
-
-
+# def add_tender(tender_id, tender_number, link, title, price):
+#     conn = sqlite3.connect('eisbot.db')
+#     cursor = conn.cursor()
+#
+#     # cursor.execute('''
+#     # INSERT OR REPLACE INTO tenders (tender_id, tender_number, link, title, price)
+#     # VALUES (?, ?, ?, ?, ?)
+#     # ''', (tender_id, tender_number, link, title, price))
+#     #
+#     # conn.commit()
+#     # conn.close()
+#
+#     #
+#     cursor.execute('''
+#            INSERT INTO tenders (tender_id,number, url, name, price, employer, dateStartAuction, dateUpdate, datePost, platform, securityRequest, typeAuction, region, status)
+#            VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+#        ''', (1,
+#              "167300002824000056",
+#              "https://zakupki.gov.ru/epz/order/notice/ea20/view/common-info.html?regNumber=0167300002824000056",
+#              "Наименование объекта закупки",
+#              "Начальная (максимальная) цена контракта",
+#              "Организация, осуществляющая размещение",
+#              "25.04.2024",
+#              "25.04.2024",
+#              "https://voicemaker.in/",
+#              "РТС Тендер",
+#              "key_securityRequest",
+#              "key_typeAuction",
+#              "Region",
+#              False
+#              ))
+#     conn.commit()
+#     conn.close()
 def add_favorite_tender(user_id, tender_id):
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -200,9 +231,8 @@ def add_favorite_tender(user_id, tender_id):
     conn.commit()
     conn.close()
 
-
 def get_user(user_id):
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -210,12 +240,12 @@ def get_user(user_id):
     ''', (user_id,))
     user = cursor.fetchone()
 
+    conn.commit()
     conn.close()
     return user
 
-
 def get_search_filters(user_id):
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -223,9 +253,9 @@ def get_search_filters(user_id):
     ''', (user_id,))
     filters = cursor.fetchall()
 
+    conn.commit()
     conn.close()
     return filters
-
 
 # def get_tenders():
 #     conn = sqlite3.connect('eisbot.db')
@@ -238,10 +268,8 @@ def get_search_filters(user_id):
 #
 #     conn.close()
 #     return tenders
-
-
 def get_favorite_tenders(user_id):
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -251,12 +279,13 @@ def get_favorite_tenders(user_id):
     ''', (user_id,))
     favorite_tenders = cursor.fetchall()
 
+    conn.commit()
     conn.close()
     return favorite_tenders
 
 
 def delete_search_filter(filter_id):
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -265,10 +294,8 @@ def delete_search_filter(filter_id):
 
     conn.commit()
     conn.close()
-
-
 def delete_favorite_tender(user_id, tender_id):
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -277,9 +304,8 @@ def delete_favorite_tender(user_id, tender_id):
 
     conn.commit()
     conn.close()
-
 def insert_data_in_db(table, dict_data_tender, all_key):
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
     cursor.execute('''
                INSERT INTO tenders (number, url, name, price, employer, dateStartAuction, dateUpdate, datePost, platform, securityRequest, typeAuction, region, status)
@@ -299,6 +325,7 @@ def insert_data_in_db(table, dict_data_tender, all_key):
                  dict_data_tender[all_key["key_status"]]
                  ))
     conn.commit()
+    conn.close()
 
 
 
@@ -320,45 +347,23 @@ def insert_data_in_db(table, dict_data_tender, all_key):
 
 
 def select_true_false_db(table, column, value):
-    conn = sqlite3.connect('eisbot.db')
+    conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
     cursor.execute(f'''SELECT {column} FROM {table} WHERE {column} = "{value}" ''')
-    return cursor.fetchone() is not None
-
-
-def select_db(table, column):
-    conn = sqlite3.connect('eisbot.db')
-    cursor = conn.cursor()
-    cursor.execute(f"""SELECT {column} FROM {table}  """)
-    print(cursor.fetchall())
-    print("0149200002324004449" in cursor.fetchall())
-    return cursor
-
-
-
-def creatTable_db():
-    conn = sqlite3.connect('eisbot.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS tenders (
-            tender_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            number TEXT,
-            url TEXT,
-            name TEXT,
-            price TEXT,
-            employer TEXT,
-            dateStartAuction TEXT,
-            dateUpdate TEXT,
-            datePost TEXT,
-            platform TEXT,
-            securityRequest TEXT,
-            typeAuction TEXT,
-            region TEXT,
-            status TEXT,
-            checking_notifications BOOLEAN DEFAULT 0
-        );''')
-
+    item = cursor.fetchone()
     conn.commit()
+    conn.close()
+    return item is not None
 
-init_db()
+
+# def select_db(table, column):
+#     conn = sqlite3.connect('eisbot.db')
+#     cursor = conn.cursor()
+#     cursor.execute(f"""SELECT {column} FROM {table}  """)
+#     print(cursor.fetchall())
+#     print("0149200002324004449" in cursor.fetchall())
+#     return cursor
+
 creatTable_db()
+init_db()
+
