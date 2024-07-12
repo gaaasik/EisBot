@@ -1,9 +1,10 @@
-from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.utils.callback_data import CallbackData
-
+from aiogram.dispatcher.filters.state import StatesGroup, State
 selected_regions=[]
 
+# #search_callback = CallbackData("search", "action")
 search_callback = CallbackData("search", "action")
+
 all_regions = ["г. Москва", "Белгородская область",
                "Брянская область",
                "Владимирская область",

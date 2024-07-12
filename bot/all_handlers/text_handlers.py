@@ -1,22 +1,18 @@
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import StatesGroup, State
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram import types
-from aiogram.dispatcher.filters import Text
-from aiogram.utils.callback_data import CallbackData
+
 
 import logging
-
+from aiogram import types
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.dispatcher.filters import Text, state
 from bot.all_handlers.create_search import choose_regions
 from bot.database.database import add_user,add_keyword_in_db,get_tenders
 from bot.keyboards.user_keyboards import create_start_ReplyKeyboardMarkup
 from bot.all_handlers.another_function import Search_States,all_regions,pages,search_callback
-from bot.start_bot import dp,bot
 from bot.parsing.parsing import get_page
 from bot.keyboards.showTendersInMessage import keyboard_to_show_tenders,create_tender_message
-
-
-
+from bot.keyboards.user_keyboards import create_start_ReplyKeyboardMarkup
+from bot.start_bot import dp,bot
+from aiogram.dispatcher import FSMContext
 # FSM для управления состояниями
 
 
@@ -48,8 +44,6 @@ async def add_search(message: types.Message):
     await message.reply("Чтобы добавить поиск, введите ключевое поле для поиска : ")
     await Search_States.keyword.set()
 
-
-
 @dp.message_handler(state=Search_States.keyword)
 async def process_keyword(message: types.Message, state: FSMContext):
     keyword = message.text
@@ -64,7 +58,40 @@ async def process_keyword(message: types.Message, state: FSMContext):
     await message.reply(text="Выберете регион: ",reply_markup=await choose_regions())
     await state.finish()
 
-# Обработчик сообщений от кнопок reply
+# # Обработчик сообщений от кнопок reply
+# @my_router.message(F.text in ["Поиск тендеров", "Мои тендеры", "Избранное", "Больше возможностей", "Помощь",
+#                                      "Обратная связь"])
+# async def handle_reply_buttons(message: types.Message):
+#     # if message.text == "Поиск тендеров":
+#     #     print("z nen")
+#     #     await  bot.send_message(message.from_user.id, "Чтобы добавить поиск, заполните фильтры (необязательно):", reply_markup=get_search_filters_keyboard(message.from_user.id))
+#     if message.text == "Мои тендеры":
+#         await message.answer("Скоро добавим.", reply_markup=create_start_ReplyKeyboardMarkup())
+#     elif message.text == "Избранное":
+#         await message.answer("Тут скоро будут отображаться ваши сохраненные тендеры.", reply_markup=create_start_ReplyKeyboardMarkup())
+#     elif message.text == "Больше возможностей":
+#         await message.answer(
+#             "Больше возможностей в платной версии. Полезные функции, которые вы можете добавить:\n- Автоматическое уведомление о новых тендерах\n- Фильтрация по более детальным параметрам\n- Сохранение и экспорт результатов поиска\n- Аналитика и отчеты по тендерам",
+#             reply_markup=create_start_ReplyKeyboardMarkup())
+#     elif message.text == "Помощь":
+#         await message.answer("Функция 'Помощь' в разработке.", reply_markup=create_start_ReplyKeyboardMarkup())
+#     elif message.text == "Обратная связь":
+#         await message.answer("Функция 'Обратная связь' в разработке.", reply_markup=create_start_ReplyKeyboardMarkup())
+
+##########################
+#Надо доделать
+#################
+#№№№№№№№№№№№№№№№№№№№№
+# @dp.message(F.text == "Мои тендеры")
+# async def handle_reply_buttons(message: types.Message):
+#     await message.answer("Скоро добавим.", reply_markup=create_start_ReplyKeyboardMarkup())
+# @dp.message(F.text == "Избранное")
+# async def handle_reply_favorite(message: types.Message):
+#     await message.answer("Тут скоро будут отображаться ваши сохраненные тендеры.", reply_markup=create_start_ReplyKeyboardMarkup())
+#
+#
+#
+####надо вытаскивать отдельной обработчик
 @dp.message_handler(
     lambda message: message.text in ["Поиск тендеров", "Мои тендеры", "Избранное", "Больше возможностей", "Помощь",
                                      "Обратная связь"])
@@ -87,6 +114,33 @@ async def handle_reply_buttons(message: types.Message):
 
 
 
+
+
+
+
+
+
+
+# @my_router.message(F.text == "Мои тендеры")
+# async def handle_reply_buttons(message: types.Message):
+#     await message.answer("Скоро добавим.", reply_markup=create_start_ReplyKeyboardMarkup())
+# @my_router.message(F.text == "Мои тендеры")
+# async def handle_reply_buttons(message: types.Message):
+#     await message.answer("Скоро добавим.", reply_markup=create_start_ReplyKeyboardMarkup())
+#
+#
+# elif message.text == "Избранное":
+#     await message.answer("Тут скоро будут отображаться ваши сохраненные тендеры.", reply_markup=create_start_ReplyKeyboardMarkup())
+# elif message.text == "Больше возможностей":
+#     await message.answer(
+#         "Больше возможностей в платной версии. Полезные функции, которые вы можете добавить:\n- Автоматическое уведомление о новых тендерах\n- Фильтрация по более детальным параметрам\n- Сохранение и экспорт результатов поиска\n- Аналитика и отчеты по тендерам",
+#         reply_markup=create_start_ReplyKeyboardMarkup())
+# elif message.text == "Помощь":
+#     await message.answer("Функция 'Помощь' в разработке.", reply_markup=create_start_ReplyKeyboardMarkup())
+# elif message.text == "Обратная связь":
+#     await message.answer("Функция 'Обратная связь' в разработке.", reply_markup=create_start_ReplyKeyboardMarkup())
+#
+#
 
 # Обработчик нажатий на инлайн кнопки
 @dp.callback_query_handler(lambda c: c.data.startswith('region_'))
