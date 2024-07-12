@@ -114,14 +114,12 @@ def init_db():
     #                 )
     #                )
 
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS favorite_tenders (
-        user_id INTEGER,
-        tender_id INTEGER,
-        FOREIGN KEY (user_id) REFERENCES users (user_id),
-        FOREIGN KEY (tender_id) REFERENCES tenders (tender_id)
-    )
-    ''')
+    # cursor.execute('''CREATE TABLE IF NOT EXISTS favorite_tenders (
+    #     user_id INTEGER,
+    #     tender_id INTEGER,
+    #     FOREIGN KEY (user_id) REFERENCES users (user_id),
+    #     FOREIGN KEY (tender_id) REFERENCES tenders (tender_id)
+    # )''')
 
     conn.commit()
     conn.close()
