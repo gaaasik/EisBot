@@ -1,5 +1,6 @@
 import sqlite3
 path_db='bot/database/eisbot.db'
+
 def creatTable_db():
     conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
@@ -32,11 +33,16 @@ def drop_tabel(table):
     print(f"Table {table} dropped... ")
     conn.commit()
     conn.close()
-#drop_tabel('tenders')
-# creatTable_db()
+
 def init_db():
     conn = sqlite3.connect(path_db)
     cursor = conn.cursor()
+    # Удаление таблицы
+   # cursor.execute("DROP TABLE search_filters")
+    # cursor.execute("DROP TABLE tenders")
+    # cursor.execute("DROP TABLE tenders")
+    # cursor.execute("DROP TABLE tenders")
+    #print("Table dropped... ")
 
     # Создание таблиц
     cursor.execute('''
@@ -44,7 +50,8 @@ def init_db():
         user_id INTEGER PRIMARY KEY,
         username TEXT,
         phone_number TEXT,
-        message_count INTEGER
+        message_count INTEGER,
+        search_id INTEGER
     )
     ''')
 
@@ -158,17 +165,17 @@ def add_keyword_in_db(user_id,keyword):
     conn.commit()
     conn.close()
 
-# def add_regions(user_id,regions,all_region):
-#     print("Пытаемяс добавить регионы")
-#     conn = sqlite3.connect('eisbot.db')
-#     cursor = conn.cursor()
-#     if regions == all_region:
-#         cursor.execute('''
-#            INSERT INTO search_filters (user_id, region)
-#            VALUES (?, ?)
-#            ''', (user_id, regions))
-#         conn.commit()
-#         conn.close()
+def add_regions_in_db(user_id,chat_id,region):
+    print("Пытаемяс добавить регионы")
+    conn = sqlite3.connect('eisbot.db')
+    cursor = conn.cursor()
+
+    cursor.execute('''
+       INSERT INTO search_filters (user_id, chat_id,region)
+       VALUES (?,?,?)
+       ''', (user_id,chat_id,region))
+    conn.commit()
+    conn.close()
 def get_tenders():
     print("Значение тендера")
     conn = sqlite3.connect(path_db)
