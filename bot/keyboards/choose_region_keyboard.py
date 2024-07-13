@@ -5,7 +5,8 @@ from aiogram.utils.callback_data import CallbackData
 from bot.all_handlers.another_function import Search_States,pages,all_regions,search_callback,current_page,selected_regions
 import bot.all_handlers.create_search_filters.create_search
 from bot.start_bot import dp
-
+from bot.database.database import add_regions_in_db
+from bot.looping.start_looping import start_loop_daily
 search_callback = CallbackData("search", "action")
 async def choose_regions():
     # Здесь должны быть все регионы
@@ -34,6 +35,15 @@ async def choose_regions():
 
 @dp.callback_query_handler(lambda callback_query: callback_query.data == 'all_regions')
 async def add_all_regions(callback_query: types.CallbackQuery):
+    print(callback_query.message.from_user.id,callback_query.message.chat.id )
+    add_regions_in_db(callback_query.message.from_user.id,callback_query.message.chat.id ,"all_regions")
     keyboard = InlineKeyboardMarkup("Сохранить и начать поиск", callback_data=search_callback.new(action="save_and_search"))
     #     await message.answer("Выберите опцию:", reply_markup=)
-    await callback_query.message.answer("Вы выбрали все регионы", reply_markup=keyboard)
+
+    await callback_query.message.answer("Вы выбрали все регионы, ваш поиск сохранен, если найду что-то новенькое напишу !", reply_markup=keyboard)
+
+
+    start_loop_daily(callback_query.message.chat.id)
+    await callback_query.message.answer("Ежедневный поиск запущен")
+
+
